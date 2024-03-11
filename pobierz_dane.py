@@ -4,15 +4,14 @@ from os import remove
 
 def download_and_save_file(url: str, filename: str) -> None:
     file = requests.get(url)
-    if file.status_code == 200:
-        with open(filename, 'wb') as f:
-            f.write(file.content)
-    else:
+    if file.status_code != 200:
         raise Exception(f"Cound't download file from {url}. Status code: {file.status_code}")
+    with open(filename, 'wb') as f:
+        f.write(file.content)
 
-def wfs_get_service_name(url: str) -> str:
+def wfs_get_service_name(url: str, version: str = "1.0.0") -> str:
     try:
-        wfs = WebFeatureService(url)
+        wfs = WebFeatureService(url, version)
         return wfs.identification.title
     except Exception as e:
         raise Exception(f"Couldn't get service name from {url}. Error: {e}")
@@ -42,12 +41,10 @@ def test_names():
     assert wfs_get_service_name("https://mapy.geoportal.gov.pl/wss/service/PZGIK/NumerycznyModelPokryciaTerenuEVRF2007/WFS/Skorowidze") == \
     "WFS Numerycznego Modelu Pokrycia Terenu - EVRF2007"
 
-
-
 def test_bdot():
     # tu nie dziala, bo bdot ma problem
-    assert wfs_get_service_name("https://mapy.geoportal.gov.pl/wss/service/PZGIK/BDOT/WFS/PobieranieBDOT10k") == \
-    "WFS BDOT10k"
+    assert wfs_get_service_name("https://mapy.geoportal.gov.pl/wss/service/PZGIK/BDOT/WFS/PobieranieBDOT10k", "2.0.0") == \
+    "Usługa WFS pobierania danych BDOT10k"
 
 def test_wfs_get_service_name_wrong_address():
     try:
@@ -57,6 +54,3 @@ def test_wfs_get_service_name_wrong_address():
     else:
         assert False
 
-
-if __name__ == '__main__':
-    pass
